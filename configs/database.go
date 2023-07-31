@@ -13,7 +13,7 @@ import (
 
 var DB *gorm.DB
 
-func ConnectDB() (*gorm.DB, error) {
+func ConnectDbSatu() (*gorm.DB, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -31,6 +31,40 @@ func ConnectDB() (*gorm.DB, error) {
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT"),
 		os.Getenv("DB_NAME"),
+	)
+
+	dbConn, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		panic(err)
+	}
+
+	dbConn = dbConn.Session(&gorm.Session{
+		NowFunc: func() time.Time {
+			return time.Now().In(location)
+		},
+	})
+
+	return dbConn, nil
+}
+func ConnectDBDua() (*gorm.DB, error) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Load the Asia/Jakarta location
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		panic(err)
+	}
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("DB_USER2"),
+		os.Getenv("DB_PASSWORD2"),
+		os.Getenv("DB_HOST2"),
+		os.Getenv("DB_PORT2"),
+		os.Getenv("DB_NAME2"),
 	)
 
 	dbConn, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
